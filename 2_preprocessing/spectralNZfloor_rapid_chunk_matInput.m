@@ -1,10 +1,11 @@
-function spectralNZfloor_rapid_chunk_matInput(fileDirectory, OutputDir,outFileName, condition, draws, repeats, totalSweeps, chunks,s_epoch, e_epoch, prestim, F0, F1, F2, F3, F4,replacement)
+function spectralNZfloor_rapid_chunk_matInput(fileDirectory, OutputDir,outFileName, FFRtech, condition, draws, repeats, totalSweeps, chunks,s_epoch, e_epoch, prestim, F0, F1, F2, F3, F4,replacement)
 % with replacement
 % NB: rapid FFR only
 
+% FFRtech = 'rapid' or 'standard' (rapid - removes first 2 and last nReps. Different startLat for each. Different      %%% HJS
 % condition = 'random' or 'phaselocked'
 % draws = number of draws, or trials picked per FFT calculation (e.g. 400; so half is pos, half is neg)
-% repeats = number of times to compute FFT; 100 for phase-locked, 1000 for random
+% repeats = number of times to compute FFT for bootstrapping; 100 for phase-locked, 1000 for random
 % totalSweeps = number of sweeps in the response (e.g. 7500)
 % chunk = number of chunks needed to analyze (e.g. total is 7500 nReps, but
 % you want to analyze 1500 nReps at a time, staring with 1-1500, then
@@ -22,7 +23,13 @@ nFiles = size(Files);
 mkdir(OutputDir);
 
 % construct the output data file name
-outfile = ['', OutputDir,'\',outFileName,'.csv', ''];
+
+if ismac
+    outfile = ['', OutputDir,'/',outFileName,'.csv', ''];
+elseif ispc
+    outfile = ['', OutputDir,'\',outFileName,'.csv', ''];
+end
+
 % write some headings and preliminary information to the output file
 if ~exist(outfile)
     fout = fopen(outfile, 'at');
@@ -52,6 +59,7 @@ for i=1:nFiles(1)
             s_trig_interval = round(((e_epoch-s_epoch)/1000)*Fs);
             
             for m = 1:chunks % analyze chunks of the EEG signal one by one (shifting by certain number of sweeps)
+                %endSweep = m*(totalSweeps/chunks); % determine end point for triggers
                 endSweep = m*(totalSweeps/chunks); % determine end point for triggers
                 startSweep = round(endSweep-(totalSweeps/chunks)+1); % determine start point for triggers
                 for l = 1:repeats
@@ -64,29 +72,59 @@ for i=1:nFiles(1)
                         
                         % epoch and save as new EEG data set
                         % create event channel (i.e. put in triggers)
-                        startTrig = (startSweep+2)*s_trig_interval; % don't look at first 2 nReps
-                        endTrig = (endSweep-2)*s_trig_interval; % don't look at final nRep
-                        
-                        if strcmp(condition,'random')
-                            % create randomly placed triggers
-                            r = round((endTrig-startTrig).*rand(1,draws)+startTrig);
-                            r = sort(r);
-                        elseif strcmp(condition,'phaselocked')
-                            % create triggers
-                            triggers = [startTrig:s_trig_interval:endTrig];
-                            if length(triggers) < draws
-                                draws = length(triggers);
+                        if strcmp(FFRtech,'rapid')    %%% HJS
+                            startTrig = (startSweep+2)*s_trig_interval; % don't look at first 2 nReps       
+                            endTrig = (endSweep-2)*s_trig_interval; % don't look at final 2 nRep
+                            
+                            if strcmp(condition,'random')
+                                % create randomly placed triggers
+                                r = round((endTrig-startTrig).*rand(1,draws)+startTrig);
+                                r = sort(r);
+                            elseif strcmp(condition,'phaselocked')
+                                % create triggers for rapid FFR     %%% HJS
+                                if strcmp(FFRtech, 'rapid')       %%% HJS
+                                    triggers = [startTrig:s_trig_interval:endTrig];     %%% THIS is the issue - in chunk 2 the endTrig gets too big. Why?? endSweep is wrong. 4500 draws is wrong.
+                                    if length(triggers) < draws
+                                        draws = length(triggers);
+                                    end
+                                    % select random trials
+                                    % indeces of random set of triggers
+                                    index = randperm(length(triggers));
+                                    index = index(1:draws);
+                                    r = triggers(index); % select random triggers by index
+                                end     %%% HJS
                             end
-                            % select random trials
-                            % indeces of random set of triggers
-                            index = randperm(length(triggers));
-                            index = index(1:draws);
-                            r = triggers(index); % select random triggers by index
-                        end
+                            
+                            for kk = 1:length(r)
+                                EEG.event(1,kk) = struct('type',255,'latency',r(kk),'urevent',kk);
+                            end
+                            
+                        elseif strcmp(FFRtech,'standard')   %%% HJS
+                            startTrig = (startSweep+1)*s_trig_interval;   % don't look at first nRep %%% HJS
+                            endTrig = (endSweep-1)*s_trig_interval; % don't look at last nRep %%% HJS 
+                            
+                            if strcmp(condition,'random')   %%% HJS
+                                % create randomly placed triggers
+                                r = round((endTrig-startTrig).*rand(1,draws)+startTrig);    %%% HJS
+                                r = sort(r);    %%% HJS
+                                
+                            elseif strcmp(condition, 'phaselocked') %%% HJS
+                                triggers = [startTrig:s_trig_interval:endTrig]; %%% HJS
+                                if length(triggers) < draws     %%% HJS
+                                    draws = length(triggers);   %%% HJS
+                                end                             %%% HJS
+                                % select random trials
+                                % indeces of random set of triggers
+                                index = randperm(length(triggers)); %%% HJS
+                                index = index(1:draws);             %%% HJS
+                                r = triggers(index); % select random triggers by index  %%% HJS
+                            end     %%% HJS
+                            
+                            for k = 1:length(r) %%% HJS
+                                EEG.event(1,k) = struct('type',255,'latency',r(k),'urevent',k); %%% HJS
+                            end     %%% HJS
+                        end         %%% HJS
                         
-                        for kk = 1:length(r)
-                            EEG.event(1,kk) = struct('type',255,'latency',r(kk),'urevent',kk);
-                        end
                         
                         % sampling with replacement (selecting epochs - may overlap for 'random')
                         
@@ -99,18 +137,31 @@ for i=1:nFiles(1)
                         epoch=zeros((draws),round(e_epoch_s*Fs));
                         
                         for n = 1:(draws) %
+                            draws
+                            n
                             if strcmp(replacement,'with') % with replacement
                                 perm = randperm(draws);
-                                perm = perm(1);
+                                perm = perm(1) % PROBLEM startLat gets bigger than length(EEG.data) on line 156... Problem when chunk >= 2
+                                                % why does startLat get above 960000??????
                             else % without replacement
-                                perm = n; 
+                                perm = n;
                             end
                             startLat = round(EEG.event(1,perm).latency);
                             % make sure the EEG data file is long enough
-%                             (startLat+round(e_epoch_s*Fs)-1) < 
-                            epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1);
+                            %                             (startLat+round(e_epoch_s*Fs)-1) <
+                            %%% EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); HJS commented out
+                            if strcmp(FFRtech, 'standard')    %%% HJS
+                                if EEG.event(1,perm).type == 255    %%% HJS
+                                    startLat = startLat + round(s_epoch_s*Fs);   %%% HJS EEG.srate -> Fs
+                                    epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); %%% HJS
+                                end     %%% HJS
+                            elseif strcmp(FFRtech, 'rapid')        %%% HJS
+                                startLat
+                                startLat+round(e_epoch_s*Fs)-1
+                                epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); %%% HJS
+                            end         %%% HJS
                         end
-                        
+                                                
                         % reject artifacts (outside +/- 25 uV)
                         % create index of trials to be removed
                         countr = 1;

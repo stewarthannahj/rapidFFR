@@ -9,7 +9,7 @@ function [triggerField, nTrigs] = create_triggers(EEGdata, nTrigs, trigTiming, s
 % This script creates a string of triggers either 'phaselocked' to the response 
 % (giving you the signal) or placed in a 'random' fashion (giving you the noise floor) 
 %
-% EEGdata = EEG data structure (including field with rigger locations)
+% EEGdata = EEG data structure (including field with trigger locations)
 % nTrigs = number of triggers to be created
 % trigTiming = the timing or location of the triggers: 'phaselocked', 'random'
 % startSweep = starting point for the triggers (this can either be the
