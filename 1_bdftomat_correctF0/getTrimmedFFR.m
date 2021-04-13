@@ -49,16 +49,15 @@ if F0x ~= 128
     t=(0:length(x)-1)/SampFreq;
     tNew=(0:1/NewSampFreq:max(t));
     x = interp1(t,xOld,tNew)';
-    trigger = interp1(t,ffr(:,2),tNew,'nearest'); %HJS changed 'next' to 'nearest'
+    trigger = interp1(t,ffr(:,2),tNew,'next'); %HJS debugging try 'nearest'. original = next
     % also need to find the new trigger point
     start = find(trigger);
     % need to adjust number of samples returned due 
     % to different sampling frequency
-    x = x(start+prestimSamples:start+prestimSamples+128*floor(nSamples/F0x)-1); %HJS debugging it gives a range of values e.g. (1 2 3 4: 10 11 12 13) rather than (1:3)
+    x = x(start+prestimSamples:start+prestimSamples+128*floor(nSamples/F0x)-1); 
 else
     % ffr(:,2) is the trigger
     start = find(ffr(:,2));
-%     x2 = (start+prestimSamples:start+prestimSamples+nSamples-1); % HJS debugging
     x = x(start+prestimSamples:start+prestimSamples+nSamples-1);
 end
 
