@@ -1,0 +1,89 @@
+# calculate mean for noise floor (rapid FFR)
+
+setwd("C:/Users/t.schoof/Documents/work/Rapid FFR")
+
+
+# read data file
+tons<-read.csv("7500nReps/500_to_7500nReps.csv",header=TRUE)
+
+# select subsets
+add_tons<-subset(tons,combine=="add")
+random<-subset(add_tons,condition=="random") # noise floor
+
+# change class
+random$sweeps<-as.factor(random$sweeps)
+
+# create empty matrix
+zscores<-matrix(nrow=length(levels(random$listener))*length(levels(random$sweeps))*2,
+                ncol=10)
+colnames(zscores)<-c("listener","run","combine","sweeps","Freq1","Freq2","Freq3","Freq4","Freq5","rms")
+
+# start counter
+row = 1
+
+# compute mean and sd per participant & number of sweeps
+for(i in 1:length(levels(random$listener))){
+  participant<-levels(random$listener)[i]
+  #select participant's data
+  nz<-subset(random,listener==participant)
+  
+  for (j in 1:2){ # two runs
+    if (j==1){
+      if (i<7){
+        fileName<-paste(participant,"-rapid-pos-1.mat",sep="")
+      } else if (i==12){
+        fileName<-paste(participant,"-rapid-pos-1.mat",sep="")
+      } else {
+        fileName<-paste(participant,"-HC-rapid-pos-1.mat",sep="")
+      }
+      fileName2<-fileName
+      
+      run<-"1"
+    } else if (j==2){
+      
+      if (i<7){
+        fileName<-paste(participant,"-rapid-pos-2.mat",sep="")
+      } else if (i==12){
+        fileName<-paste(participant,"-rapid-pos-2.mat",sep="")
+      } else {
+        fileName<-paste(participant,"-HC-rapid-pos-2.mat",sep="")
+      }
+      fileName2<-fileName
+      
+      run<-"2"
+    }
+    
+    nzFile<-subset(nz,file==fileName)
+    
+    for (k in 1:length(levels(nzFile$sweeps))){
+      swps<-levels(nzFile$sweeps)[k]
+      # select sweeps
+      nz_swps<-subset(nzFile,sweeps==swps)
+      
+      
+      # calculate mean and sd
+      mu<-apply(nz_swps[,9:14],2,mean,na.rm=TRUE)
+      
+      
+      # save in matrix
+      zscores[row,1]<-participant
+      zscores[row,2]<-run
+      zscores[row,3]<-"add"
+      zscores[row,4]<-swps
+      zscores[row,5]<-as.numeric(mu[1])
+      zscores[row,6]<-as.numeric(mu[2])
+      zscores[row,7]<-as.numeric(mu[3])
+      zscores[row,8]<-as.numeric(mu[4])
+      zscores[row,9]<-as.numeric(mu[5])
+      zscores[row,10]<-as.numeric(mu[6])
+      
+      row = row+1
+    }
+  }
+}
+
+# save mean noise floor
+write.csv(zscores,"nzfloor_mean_rapid.csv",row.names=FALSE)
+
+
+
