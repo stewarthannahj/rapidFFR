@@ -6,7 +6,7 @@ function whatF0(fileDirectory,OutputDir)
 % (see top of function for information)
 
 % NB nCycles is hard coded:
-% For 1 min recordings, it's 7503 (and later 7500)
+% For 1 min recordings, it's 7503 (and later 7500)  
 % For 9 min recordigs, it's 67500 (and later 67497)
 
 % create output directory
@@ -39,7 +39,7 @@ for i=1:nFiles(1)
     periodInSamples = SampFreq/F0;
     % extract 67500 cycles (15 sets of 4500 cycles each)
     % 67500 x 128 = 8,640,000 samples
-    nCycles = 7503; % 67500;
+    nCycles = 7503; % 7503 for short rapidFFR, 67500 for long rapidFFR
     nSamples = nCycles * periodInSamples;
     
     if ismac
@@ -76,7 +76,11 @@ for i=1:nFiles(1)
     figure
     plot(f,dB)
     title(['',fileName,''])
-    saveas(gcf,['',OutputDir,'\',name,'.fig',''])
+    if ismac
+        saveas(gcf,['',OutputDir,'/',name,'.fig',''])
+    elseif ispc
+        saveas(gcf,['',OutputDir,'\',name,'.fig',''])
+    end
     
     % % In theory, you could get a more accurate estimate by measuring a higher
     % % harmonic and dividing through. Here is for the 7th harmonic
@@ -92,8 +96,8 @@ for i=1:nFiles(1)
     % section. The position of the trigger is recalculated, and fewer samples
     % are taken to account for the fact that the new sampling frequency is
     % slightly higher.
-    nCycles = 7500; % 67497; % I figured this out directly rather than writing an equation
-    nSamples = nCycles * periodInSamples;
+% % %     nCycles = 7500; % 67497; % I figured this out directly rather than writing an equation
+% % %     nSamples = nCycles * periodInSamples;
     ffr = getTrimmedFFR(fullfile(fileDirectory,fileName), nSamples,prestim, F0x);
     % This should now have F0=128. Let's check.
     maxCycles=nCycles;
@@ -105,7 +109,11 @@ for i=1:nFiles(1)
     if F0x2 == 128
 %         error('F0 has not been changed to 128 Hz')
             % save trimmed and resampled ffr with the correct F0 (i.e. 128 Hz)
-    save(['',OutputDir,'\',name,'.mat',''],'ffr')
+            if ismac
+                save(['',OutputDir,'/',name,'.mat',''],'ffr')
+            elseif ispc
+                save(['',OutputDir,'\',name,'.mat',''],'ffr')
+            end
     end  
 
 end
