@@ -2,7 +2,7 @@ function spectralNZfloor_rapid_chunk_matInput(fileDirectory, OutputDir,outFileNa
 % with replacement
 % NB: rapid FFR only
 
-% FFRtech = 'rapid' or 'standard' (rapid - removes first 2 and last nReps. Different startLat for each. Different      %%% HJS
+% FFRtech = 'rapid' or 'standard' (rapid - removes first 2 and last nReps. Different startLat for each.       %%% HJS
 % condition = 'random' or 'phaselocked'
 % draws = number of draws, or trials picked per FFT calculation (e.g. 400; so half is pos, half is neg)
 % repeats = number of times to compute FFT for bootstrapping; 100 for phase-locked, 1000 for random
@@ -26,6 +26,8 @@ mkdir(OutputDir);
 
 if ismac
     outfile = ['', OutputDir,'/',outFileName,'.csv', ''];
+elseif isunix
+    outfile = ['', OutputDir,'/',outFileName,'.csv', ''];
 elseif ispc
     outfile = ['', OutputDir,'\',outFileName,'.csv', ''];
 end
@@ -33,7 +35,7 @@ end
 % write some headings and preliminary information to the output file
 if ~exist(outfile)
     fout = fopen(outfile, 'at');
-    fprintf(fout, 'file,listener,combine,condition,repeats,repetition,sweeps,chunk,Freq1,Freq2,Freq3,Freq4,Freq5,rms\n');
+    fprintf(fout, 'file,listener,combine,condition,repeats,repetition,sweeps,chunk,Freq1,Freq2,Freq3,Freq4,Freq5,rms,#epochsRemovedDueToArtifacts,epochsRemovedPercent\n');
     fclose(fout);
 end
 
@@ -59,7 +61,6 @@ for i=1:nFiles(1)
             s_trig_interval = round(((e_epoch-s_epoch)/1000)*Fs);
             
             for m = 1:chunks % analyze chunks of the EEG signal one by one (shifting by certain number of sweeps)
-                %endSweep = m*(totalSweeps/chunks); % determine end point for triggers
                 endSweep = m*(totalSweeps/chunks); % determine end point for triggers
                 startSweep = round(endSweep-(totalSweeps/chunks)+1); % determine start point for triggers
                 for l = 1:repeats
@@ -74,16 +75,31 @@ for i=1:nFiles(1)
                         % create event channel (i.e. put in triggers)
                         if strcmp(FFRtech,'rapid')    %%% HJS
                             startTrig = (startSweep+2)*s_trig_interval; % don't look at first 2 nReps       
-                            endTrig = (endSweep-2)*s_trig_interval; % don't look at final 2 nRep
+                            if m > 2 && m == chunks
+                                endTrig = (endSweep-4)*s_trig_interval; %%% HJS - in final chunk don't look at final 4 nRep else it calculates one extra trig_interval 
+                            else
+                                endTrig = (endSweep-2)*s_trig_interval; % don't look at final 2 nRep
+                            end
                             
                             if strcmp(condition,'random')
                                 % create randomly placed triggers
-                                r = round((endTrig-startTrig).*rand(1,draws)+startTrig);
+                                r = round((endTrig-startTrig).*rand(1,draws)+startTrig);        
+                                for k = 1:draws
+                                    while r(k) > endTrig-s_trig_interval                        %%% HJS if r(k) is too large to allow a full 128 trig interval at the end of EEG.event, it keeps recalculates r(k) until it allows a 128 trig interval
+% % %                                         old = r(k)
+                                        r(:,k) = round((endTrig-startTrig)*rand(1)+startTrig);     
+% % %                                         new = r(k)
+                                    end
+                                end
                                 r = sort(r);
                             elseif strcmp(condition,'phaselocked')
                                 % create triggers for rapid FFR     %%% HJS
                                 if strcmp(FFRtech, 'rapid')       %%% HJS
-                                    triggers = [startTrig:s_trig_interval:endTrig];     %%% THIS is the issue - in chunk 2 the endTrig gets too big. Why?? endSweep is wrong. 4500 draws is wrong.
+                                    if m > 2 && m == chunks
+                                        triggers = [startTrig:s_trig_interval:endTrig-s_trig_interval];
+                                    else
+                                        triggers = [startTrig:s_trig_interval:endTrig]; 
+                                    end
                                     if length(triggers) < draws
                                         draws = length(triggers);
                                     end
@@ -134,31 +150,26 @@ for i=1:nFiles(1)
                             draws = length(EEG.event);
                         end
 
+                        clear epoch %%% HJS
                         epoch=zeros((draws),round(e_epoch_s*Fs));
                         
                         for n = 1:(draws) %
-                            draws
-                            n
                             if strcmp(replacement,'with') % with replacement
                                 perm = randperm(draws);
-                                perm = perm(1) % PROBLEM startLat gets bigger than length(EEG.data) on line 156... Problem when chunk >= 2
-                                                % why does startLat get above 960000??????
+                                perm = perm(1); 
                             else % without replacement
                                 perm = n;
                             end
                             startLat = round(EEG.event(1,perm).latency);
                             % make sure the EEG data file is long enough
                             %                             (startLat+round(e_epoch_s*Fs)-1) <
-                            %%% EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); HJS commented out
                             if strcmp(FFRtech, 'standard')    %%% HJS
                                 if EEG.event(1,perm).type == 255    %%% HJS
                                     startLat = startLat + round(s_epoch_s*Fs);   %%% HJS EEG.srate -> Fs
                                     epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); %%% HJS
                                 end     %%% HJS
                             elseif strcmp(FFRtech, 'rapid')        %%% HJS
-                                startLat
-                                startLat+round(e_epoch_s*Fs)-1
-                                epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); %%% HJS
+                                    epoch(n,:) = EEG.data(startLat:startLat+round(e_epoch_s*Fs)-1); %%% HJS
                             end         %%% HJS
                         end
                                                 
@@ -174,7 +185,11 @@ for i=1:nFiles(1)
                         % remove trials
                         if exist('rm_index')
                             epoch([rm_index],:) = [];
+                            clear rm_index %%% HJS else it was writing each permutations rm_index onto each other and not deleting larger values
                         end
+                        
+                         epochsRemoved = countr-1;
+                         epochsRemoved_percent = epochsRemoved/totalSweeps; % or is it draws? I think totalSweeps
                         
                         % average across draws
                         avg = mean(epoch,1);
@@ -262,10 +277,10 @@ for i=1:nFiles(1)
                         Freq5 = fftFFR(FreqInd);
 
                         % print out relevant information
-                        % fprintf(fout, 'file,listener,method,combine,condition,repeats,sweeps,Freq1,Freq2,Freq3,Freq4,Freq5\n'
+                        % fprintf(fout, 'file,listener,method,combine,condition,repeats,sweeps,Freq1,Freq2,Freq3,Freq4,Freq5,#epochsRemovedDueToArtifacts,epochsRemovedPercent\n'
                         fout = fopen(outfile, 'at');
-                        fprintf(fout, '%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n', ...
-                            fileName,listener,char(combine),char(condition),repeats,l,draws,m,Freq1,Freq2,Freq3,Freq4,Freq5,sigrms);
+                        fprintf(fout, '%s,%s,%s,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n', ...
+                            fileName,listener,char(combine),char(condition),repeats,l,draws,m,Freq1,Freq2,Freq3,Freq4,Freq5,sigrms,epochsRemoved,epochsRemoved_percent);
                         fclose(fout);
                     end
                 end
