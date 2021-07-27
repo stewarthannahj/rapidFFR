@@ -125,7 +125,7 @@ for i=1:nFiles(1)
                                 r = sort(r);    %%% HJS
                                 
                             elseif strcmp(condition, 'phaselocked') %%% HJS
-                                triggers = [startTrig:s_trig_interval:endTrig]; %%% HJS
+                                triggers = [startTrig:(s_trig_interval/chunks):endTrig]; %%% HJS
                                 if length(triggers) < draws     %%% HJS
                                     draws = length(triggers);   %%% HJS
                                 end                             %%% HJS
