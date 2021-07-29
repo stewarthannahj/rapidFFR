@@ -4,16 +4,12 @@ library(car)
 # clear workspace
 rm(list = ls(all = TRUE))
 
-# iterations
-ALLnReps= c("1500", "3000", "4500","6000", "7500")
-ALLnReps_nz= c("1500", "3000", "4500","6000", "7500")
-ALLnReps_sig = c("1500", "3000", "4500","6000", "7500")
+allCHUNKS = c("1","2","3","4","5")
 
 # read data files
 setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/1_data/4_analysis/")
 
-# read data file
-signalfile<-read.csv("in/Experiment1_normalVrapid/rep1000_stdIterations.csv",header=TRUE)
+signalfile<-read.csv("in/Experiment1_normalVrapid/rep1000_stdChunks.csv",header=TRUE)
 
 for (h in 1:16){
   if(h==1){
@@ -67,24 +63,21 @@ for (h in 1:16){
   
   # look in column 'listener' in file of everyone & get lines for listener h only
   signalfile_listener = signalfile[grep(paste("^",listener,sep=""), signalfile$listener),]
-  
-  # z is number of iterations in ALLnReps (defn line 9 above, length(AllnReps_nz) = length(AllnReps_sig))
-  for(z in 1:length(ALLnReps_nz)){
+ 
+  # z is number of chunks in allCHUNKS (defn line 7 above)
+  for(z in 1:length(allCHUNKS)){
     
-    # current iteration in for loop
-    nReps = ALLnReps[z]
-    nReps_nz = ALLnReps_nz[z]
-    nReps_sig = ALLnReps_sig[z]
-    
-    # select signal or noisefloor
-    # look in column 'condition' for listener h and get phaselocked (signal) OR random (noise) only 
-    signal_listener = signalfile_listener[grep(paste("^","phaselocked",sep=""), signalfile_listener$condition),]
-    noise_listener = signalfile_listener[grep(paste("^","random",sep=""), signalfile_listener$condition),]
+    # current chunk in for loop
+    chunky = allCHUNKS[z]
     
     # select subset - nReps
-    # look in column 'sweeps' for listener h and get iteration z only
-    noise = noise_listener[grep(paste("^",nReps_nz,"$",sep=""), noise_listener$sweeps),]
-    signal = signal_listener[grep(paste("^",nReps_sig,"$",sep=""), signal_listener$sweeps),]
+    # look in column 'chunk' for listener h and get chunk z only
+    signalfile_Reps = signalfile_listener[grep(paste("^",chunky,"$",sep=""), signalfile_listener$chunk),]
+    
+    # select signal or noisefloor
+    # look in column 'condition' and get phaselocked (signal) OR random (noise) only 
+    signal = signalfile_Reps[grep(paste("^","phaselocked",sep=""), signalfile_Reps$condition),]
+    noise = signalfile_Reps[grep(paste("^","random",sep=""), signalfile_Reps$condition),]
     
     # select subset - polarity
     # look in column 'combine' for add OR sub only
@@ -108,7 +101,7 @@ for (h in 1:16){
     # make new add matrix
     cor.matrix.add<-matrix(nrow=1,ncol=10)
     # name columns
-    colnames(cor.matrix.add) = c("listener","run","iteration","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime","snr")
+    colnames(cor.matrix.add) = c("listener","run","chunk","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime","snr")
     # copy empty add matrix for sub
     cor.matrix.sub<-cor.matrix.add
     
@@ -129,26 +122,26 @@ for (h in 1:16){
       # calculate dprime
       dprime.add = (mnSIGadd1 - mnNZadd1)/sqrt((sdSIGadd1^2+sdNZadd1^2)/2)
       dprime.sub = (mnSIGsub1 - mnNZsub1)/sqrt((sdSIGsub1^2+sdNZsub1^2)/2)
-      
+
       # calculate snr
       snr.add = 20*log10(mnSIGadd1/mnNZadd1)
-      snr.sub = 20*log10(mnSIGsub1/mnNZsub1)
-      
-      # save M, SD and dprime to file per listener per iteration
+      snr.sub = 20*log10(mnSIGsub1/mnNZsub1)      
+            
+      # save M, SD and dprime to file per listener per chunk
       cor.matrix.add[1,1]<-listener
       cor.matrix.add[1,2]<-1
-      cor.matrix.add[1,3]<-nReps
+      cor.matrix.add[1,3]<-chunky
       cor.matrix.add[1,4]<-"rapid"
       cor.matrix.add[1,5]<-mnNZadd1
       cor.matrix.add[1,6]<-mnSIGadd1
       cor.matrix.add[1,7]<-sdNZadd1
       cor.matrix.add[1,8]<-sdSIGadd1
       cor.matrix.add[1,9]<-dprime.add	
-      cor.matrix.add[1,10]<-snr.add
+      cor.matrix.add[1,10]<-snr.add      
       
       cor.matrix.sub[1,1]<-listener
       cor.matrix.sub[1,2]<-1
-      cor.matrix.sub[1,3]<-nReps
+      cor.matrix.sub[1,3]<-chunky
       cor.matrix.sub[1,4]<-"rapid"
       cor.matrix.sub[1,5]<-mnNZsub1
       cor.matrix.sub[1,6]<-mnSIGsub1
@@ -157,8 +150,9 @@ for (h in 1:16){
       cor.matrix.sub[1,9]<-dprime.sub
       cor.matrix.sub[1,10]<-snr.sub
       
-      write.csv(cor.matrix.add,file=paste("out/Experiment1_normalVrapid/Routput_stdIterations/snr_",listener,"_stdIterations_",nReps,"_",var_name[i],"add_28July21.csv"))
-      write.csv(cor.matrix.sub,file=paste("out/Experiment1_normalVrapid/Routput_stdIterations/snr_",listener,"_stdIterations_",nReps,"_",var_name[i],"sub_28July21.csv"))
+      
+      write.csv(cor.matrix.add,file=paste("out/Experiment1_normalVrapid/Routput_stdChunks/snr_",listener,"_stdChunks_",chunky,"_",var_name[i],"add_28July21.csv"))
+      write.csv(cor.matrix.sub,file=paste("out/Experiment1_normalVrapid/Routput_stdChunks/snr_",listener,"_stdChunks_",chunky,"_",var_name[i],"sub_28July21.csv"))
     }
   }
 }

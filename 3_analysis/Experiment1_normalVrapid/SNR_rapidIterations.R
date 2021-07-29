@@ -5,15 +5,20 @@ library(car)
 rm(list = ls(all = TRUE))
 
 # iterations
-#ALLnReps = c("500", "1000", "1500","2000", "2500","3000", "3500","4000", "4500","5000","5500","6000","6500","7000","7500")
-ALLnReps_nz= c("500", "1000", "1500","2000", "2500","3000", "3500","4000", "4500","5000","5500","6000","6500","7000")
-ALLnReps_sig = c("496", "996", "1496","1996", "2496","2996", "3496","3996", "4496","4996","5496","5996","6496","6996")
+ALLnReps= c("500", "1000", "1500","2000", "2500","3000", "3500","4000", "4500","5000","5500","6000","6500","7000","7500")
+ALLnReps_nz= c("500", "1000", "1500","2000", "2500","3000", "3500","4000", "4500","5000","5500","6000","6500","7000","7500")
+ALLnReps_sig = c("496", "996", "1496","1996", "2496","2996", "3496","3996", "4496","4996","5496","5996","6496","6996","7496")
 
 # read data files
-# setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/z_passedOn/Tim_StuartHD/7500nReps/")
-setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/z_passedOn/Tim_StuartHD/")
+setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/1_data/4_analysis/")
 
-signalfile = read.csv("500_to_7500nReps_once_rapid.csv",header=T) # changed from 500_to_7500nReps_rapid.csv
+# read data file
+signalfile1<-read.csv("in/Experiment1_normalVrapid/rep1000_rapidIterations_pt1.csv",header=TRUE)
+signalfile2<-read.csv("in/Experiment1_normalVrapid/rep1000_rapidIterations_pt2.csv",header=TRUE)
+
+#signalfile = read.csv("500_to_7500nReps_once_rapid.csv",header=T) # changed from 500_to_7500nReps_rapid.csv
+
+signalfile <- rbind(signalfile1, signalfile2)
 
 for (h in 1:16){
   if(h==1){
@@ -72,13 +77,14 @@ for (h in 1:16){
   for(z in 1:length(ALLnReps_nz)){
     
     # current iteration in for loop
+    nReps = ALLnReps[z]
     nReps_nz = ALLnReps_nz[z]
     nReps_sig = ALLnReps_sig[z]
     
     # select signal or noisefloor
-    # look in column 'condition' for listener h and get phaselocked (signal) OR random (noise) only 
-    signal_listener = signalfile_listener[grep(paste("^","phaselocked",sep=""), signalfile_listener$condition),]
+    # look in column 'condition' for listener h and get random (noise) OR phaselocked (signal) only
     noise_listener = signalfile_listener[grep(paste("^","random",sep=""), signalfile_listener$condition),]
+    signal_listener = signalfile_listener[grep(paste("^","phaselocked",sep=""), signalfile_listener$condition),]
     
     # select subset - nReps
     # look in column 'sweeps' for listener h and get iteration z only
@@ -105,9 +111,9 @@ for (h in 1:16){
     # calculate dprime & SNR
     # calculate dprime
     # make new add matrix
-    cor.matrix.add<-matrix(nrow=1,ncol=9)
+    cor.matrix.add<-matrix(nrow=1,ncol=10)
     # name columns
-    colnames(cor.matrix.add) = c("listener","run","iteration","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime")
+    colnames(cor.matrix.add) = c("listener","run","iteration","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime","snr")
     # copy empty add matrix for sub
     cor.matrix.sub<-cor.matrix.add
     
@@ -129,6 +135,10 @@ for (h in 1:16){
       dprime.add = (mnSIGadd1 - mnNZadd1)/sqrt((sdSIGadd1^2+sdNZadd1^2)/2)
       dprime.sub = (mnSIGsub1 - mnNZsub1)/sqrt((sdSIGsub1^2+sdNZsub1^2)/2)
       
+      # calculate snr
+      snr.add = 20*log10(mnSIGadd1/mnNZadd1)
+      snr.sub = 20*log10(mnSIGsub1/mnNZsub1)
+      
       # save M, SD and dprime to file per listener per iteration
       cor.matrix.add[1,1]<-listener
       cor.matrix.add[1,2]<-1
@@ -139,6 +149,7 @@ for (h in 1:16){
       cor.matrix.add[1,7]<-sdNZadd1
       cor.matrix.add[1,8]<-sdSIGadd1
       cor.matrix.add[1,9]<-dprime.add	
+      cor.matrix.add[1,10]<-snr.add
       
       cor.matrix.sub[1,1]<-listener
       cor.matrix.sub[1,2]<-1
@@ -149,9 +160,10 @@ for (h in 1:16){
       cor.matrix.sub[1,7]<-sdNZsub1
       cor.matrix.sub[1,8]<-sdSIGsub1
       cor.matrix.sub[1,9]<-dprime.sub
+      cor.matrix.sub[1,10]<-snr.sub
       
-      write.csv(cor.matrix.add,file=paste("C:/Users/t.schoof/Documents/Work/Rapid FFR/7500nReps/R output/dprime_",listener,"_rapid_",nReps,"_",var_name[i],"add_July21.csv"))
-      write.csv(cor.matrix.sub,file=paste("C:/Users/t.schoof/Documents/Work/Rapid FFR/7500nReps/R output/dprime_",listener,"_rapid_",nReps,"_",var_name[i],"sub_July21.csv"))
+      write.csv(cor.matrix.add,file=paste("out/Experiment1_normalVrapid/Routput_rapidIterations/snr_",listener,"_rapid_",nReps,"_",var_name[i],"add_28July21.csv"))
+      write.csv(cor.matrix.sub,file=paste("out/Experiment1_normalVrapid/Routput_rapidIterations/snr_",listener,"_rapid_",nReps,"_",var_name[i],"sub_28July21.csv"))
     }
   }
 }

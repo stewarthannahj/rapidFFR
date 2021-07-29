@@ -7,9 +7,9 @@ rm(list = ls(all = TRUE))
 allCHUNKS = c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15")
 
 # read data files
-setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/z_passedOn/Tim_StuartHD/9minResults/")
+setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/1_data/4_analysis/")
 
-signalfile = read.csv("15chunks_4500nReps.csv",header=T)
+signalfile<-read.csv("in/Experiment2_longRapid/rep1000_longRapid.csv",header=TRUE)
 
 for (h in 1:21){
   if(h==1){
@@ -114,9 +114,9 @@ for (h in 1:21){
     # calculate dprime & SNR
     # calculate dprime
     # make new add matrix
-    cor.matrix.add<-matrix(nrow=1,ncol=9)
+    cor.matrix.add<-matrix(nrow=1,ncol=10)
     # name columns
-    colnames(cor.matrix.add) = c("listener","run","chunk","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime")
+    colnames(cor.matrix.add) = c("listener","run","chunk","condition","meanNZ","meanSIG","sdNZ","sdSIG","dprime","snr")
     # copy empty add matrix for sub
     cor.matrix.sub<-cor.matrix.add
     
@@ -137,7 +137,11 @@ for (h in 1:21){
       # calculate dprime
       dprime.add = (mnSIGadd1 - mnNZadd1)/sqrt((sdSIGadd1^2+sdNZadd1^2)/2)
       dprime.sub = (mnSIGsub1 - mnNZsub1)/sqrt((sdSIGsub1^2+sdNZsub1^2)/2)
-      
+
+      # calculate snr
+      snr.add = 20*log10(mnSIGadd1/mnNZadd1)
+      snr.sub = 20*log10(mnSIGsub1/mnNZsub1)      
+            
       # save M, SD and dprime to file per listener per chunk
       cor.matrix.add[1,1]<-listener
       cor.matrix.add[1,2]<-1
@@ -148,6 +152,7 @@ for (h in 1:21){
       cor.matrix.add[1,7]<-sdNZadd1
       cor.matrix.add[1,8]<-sdSIGadd1
       cor.matrix.add[1,9]<-dprime.add	
+      cor.matrix.add[1,10]<-snr.add      
       
       cor.matrix.sub[1,1]<-listener
       cor.matrix.sub[1,2]<-1
@@ -158,9 +163,11 @@ for (h in 1:21){
       cor.matrix.sub[1,7]<-sdNZsub1
       cor.matrix.sub[1,8]<-sdSIGsub1
       cor.matrix.sub[1,9]<-dprime.sub
+      cor.matrix.sub[1,10]<-snr.sub
       
-      write.csv(cor.matrix.add,file=paste("/Volumes/UCL_DR_HJS/projects/rapidFFR/z_passedOn/Tim_StuartHD/9minResults/R output/Hdprime_",listener,"_rapid_",chunky,"_",var_name[i],"add_Mar2017.csv"))
-      write.csv(cor.matrix.sub,file=paste("/Volumes/UCL_DR_HJS/projects/rapidFFR/z_passedOn/Tim_StuartHD/9minResults/R output/Hdprime_",listener,"_rapid_",chunky,"_",var_name[i],"sub_Mar2017.csv"))
+      
+      write.csv(cor.matrix.add,file=paste("out/Experiment2_longRapid/Routput_longRapid/snr_",listener,"_longRapid_",chunky,"_",var_name[i],"add_28July21.csv"))
+      write.csv(cor.matrix.sub,file=paste("out/Experiment2_longRapid/Routput_longRapid/snr_",listener,"_longRapid_",chunky,"_",var_name[i],"sub_28July21.csv"))
     }
   }
 }
