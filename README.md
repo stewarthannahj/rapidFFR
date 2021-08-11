@@ -11,101 +11,101 @@ MATLAB version: R2016a EEGLAB version: 2020.0
 
 FFR: Tim data pipeline
 
-1_bdftomat_correctF0
-bdf2mat.m
-bdf2mat(‘inputDirectory', nListeners, ‘outputDirectory’)
+1_bdftomat_correctF0 </br>
+bdf2mat.m </br>
+bdf2mat(‘inputDirectory', nListeners, ‘outputDirectory’) </br>
 Opens BDF files, references eeg, filters, saves continuous eeg waveforms to .mat. Keeps signal trigger channel (255) but not start of eeg recording trigger channel (254).
 
-whatF0.m
-whatF0(‘inputDirectory', ‘outputDirectory’)
+whatF0.m </br>
+whatF0(‘inputDirectory', ‘outputDirectory’) </br>
 Calculates F0, resamples so F0 is 128 Hz. Removes trigger channel.
 
-2_preprocessing
-spectralNZfloor_rapid_run <- bootstrapping needs a hell of a lot of time!
-Options are hardcoded in to run spectralNZfloor_rapid_chunk_matInput.m
-*need participants in individual folders to run*
-Exp1 standard: 7 hours per person for 1 chunk, 35 hours per person for 5 chunks and 40-50 hours per person for iterations
-Exp1 rapid: 40-50 hours per person for iterations
+2_preprocessing </br>
+spectralNZfloor_rapid_run <- bootstrapping needs a hell of a lot of time! </br>
+Options are hardcoded in to run spectralNZfloor_rapid_chunk_matInput.m </br>
+*need participants in individual folders to run* </br>
+Exp1 standard: 7 hours per person for 1 chunk, 35 hours per person for 5 chunks and 40-50 hours per person for iterations </br>
+Exp1 rapid: 40-50 hours per person for iterations </br>
 Exp2 longRapid: 24-30 hours per person for 15 chunks
 
-3_analysis 
-Make a csv of all of the output from each experiment from stage 2. 
-e.g. Exp1 rapid, all Ps, all nReps, add & sub, phase locked & random
-Run SNR_XXX on that csv e.g. SNR_rapidIterations.R
-This will output a single summary line for each participant into an experiment labelled output folder
-e.g. Routput_rapidIterations
-Run SNR_XXXX_concat on the files in that output folder e.g. SNR_stdChunks_concat.R
-This will put all of the participants into two csv files together (one add, one sub)
-e.g. snr_rapidIterations_concat_add.csv and snr_rapidIterations_concat_sub.csv
-Rows for participant, iteration/chunk, var_name (i.e. F1, F2, F3, F4, F5, rms)
-Columns for meanNZ, meanSIG, sdNZ, sdSIG, dprime, SNR
-Run 
-This will put all of the participants into two csv files together (one add, one sub)
-e.g. signal_mean_rapid_add.csv and signal_mean_rapid_sub.csv
-Rows for participant, run, iteration/chunk
-Columns for F1, F2, F3, F4, F5, rms
-=> difference between final csv files (SNR_XXXX and signal_mean/NZ_XXXX) are:
-Runs averaged in SNR_XXXX, they are separate in signal_mean/NZ_XXXX
-F1, F2 etc. are rows in SNR_XXXX, they are columns in signal_mean/NZ_XXXX
-Calculates new values (mean, sd, SNR) in SNR_XXXX, no new values calculated in signal_mean/NZ_XXXX
+3_analysis  </br>
+Make a csv of all of the output from each experiment from stage 2.  </br>
+e.g. Exp1 rapid, all Ps, all nReps, add & sub, phase locked & random </br>
+Run SNR_XXX on that csv e.g. SNR_rapidIterations.R </br>
+This will output a single summary line for each participant into an experiment labelled output folder </br>
+e.g. Routput_rapidIterations </br>
+Run SNR_XXXX_concat on the files in that output folder e.g. SNR_stdChunks_concat.R </br>
+This will put all of the participants into two csv files together (one add, one sub) </br>
+e.g. snr_rapidIterations_concat_add.csv and snr_rapidIterations_concat_sub.csv </br>
+Rows for participant, iteration/chunk, var_name (i.e. F1, F2, F3, F4, F5, rms) </br>
+Columns for meanNZ, meanSIG, sdNZ, sdSIG, dprime, SNR </br>
+Run  </br>
+This will put all of the participants into two csv files together (one add, one sub) </br>
+e.g. signal_mean_rapid_add.csv and signal_mean_rapid_sub.csv </br>
+Rows for participant, run, iteration/chunk </br>
+Columns for F1, F2, F3, F4, F5, rms </br>
+=> difference between final csv files (SNR_XXXX and signal_mean/NZ_XXXX) are: </br>
+Runs averaged in SNR_XXXX, they are separate in signal_mean/NZ_XXXX </br>
+F1, F2 etc. are rows in SNR_XXXX, they are columns in signal_mean/NZ_XXXX </br>
+Calculates new values (mean, sd, SNR) in SNR_XXXX, no new values calculated in signal_mean/NZ_XXXX </br>
 
-4_Graphing and stats
-analysis.Rmd
+4_Graphing and stats </br>
+analysis.Rmd </br>
 updates figures and runs stats
 
-Current problems:
-Calculating mean SIGNAL and NZ is not working cleanly for standard FFR. They are not different from one another
-	=> has been done on the following with no more luck:
-100ms epoch *for chunked data*
-54.xxx ms epoch *for increasing iterations of data*
-7.8xxx ms epoch <- currently running
+Current problems: </br>
+Calculating mean SIGNAL and NZ is not working cleanly for standard FFR. They are not different from one another </br>
+	=> has been done on the following with no more luck: </br>
+100ms epoch *for chunked data* </br>
+54.xxx ms epoch *for increasing iterations of data* </br>
+7.8xxx ms epoch <- currently running </br>
 Decide how long rapid FFR should be
 
-To do:
-Need to decide on stats/research question
-Figure 1 - study design
-Figure 2 - quality of data
-Figure 4 - need standard sorted
-Figure 5 - correlations & stats. Want z-score between run 1 & run 2?
-How long rapid FFR should be? Psychometric fits?
-Re-writing 
+To do: </br>
+Need to decide on stats/research question </br>
+Figure 1 - study design </br>
+Figure 2 - quality of data </br>
+Figure 4 - need standard sorted </br>
+Figure 5 - correlations & stats. Want z-score between run 1 & run 2? </br>
+How long rapid FFR should be? Psychometric fits? </br>
+Re-writing </br>
 DONE!
 
-Notes:
-No participant log
-Everyone had normal hearing
-Electrodes used: 
- Cz - active
- C7 - active NOTE not C7 electrode(!) but 7th cervical vertebra 
- CMS - ground
- DRL - ground
-Electrode offsets < 40 mV
-Sample rate 16,384 Hz
+Notes: </br>
+No participant log </br>
+Everyone had normal hearing </br>
+Electrodes used:  </br>
+ Cz - active </br>
+ C7 - active NOTE not C7 electrode(!) but 7th cervical vertebra  </br>
+ CMS - ground </br>
+ DRL - ground </br>
+Electrode offsets < 40 mV </br>
+Sample rate 16,384 Hz </br>
 Timing calculations for both experiments are in: rapidFFRcalcs.xlsx
 
-Exp 1
-Std:
-Sawtooth = 7.815 ms
-Stimuli = 7 cycles of sawtooth => 54.6875 ms
-ISI = 45.3125 ms
-1,500 cycles
-About 2.5 mins long
-Repeated 5 times (calling this chunks) => 7,500 cycles total
-(Not resampled for 128Hz as no problems)
-Baseline corrected
+Exp 1 </br>
+Std: </br>
+Sawtooth = 7.815 ms </br>
+Stimuli = 7 cycles of sawtooth => 54.6875 ms </br>
+ISI = 45.3125 ms </br>
+1,500 cycles </br>
+About 2.5 mins long </br>
+Repeated 5 times (calling this chunks) => 7,500 cycles total </br>
+(Not resampled for 128Hz as no problems) </br>
+Baseline corrected </br>
 1,000 permutations
 
-Rapid
-Sawtooth = 7.815 ms
-Stimuli = continuous for 1 chunk => 7,500 cycles total
-(After resample for 128Hz, get 7,503 cycles total)
-About 35 ms long
-Not baseline corrected
+Rapid </br>
+Sawtooth = 7.815 ms </br>
+Stimuli = continuous for 1 chunk => 7,500 cycles total </br>
+(After resample for 128Hz, get 7,503 cycles total) </br>
+About 35 ms long </br>
+Not baseline corrected </br>
 1,000 permutations
 
-Exp 2
-LongRapid:
-Same as exp 1 rapid but for 15 chunks of 4,500 cycles => 67,500 cycles total
-(After resample for 128Hz, get 67,497 cycles total)
-Almost 9 mins long
+Exp 2 </br>
+LongRapid: </br>
+Same as exp 1 rapid but for 15 chunks of 4,500 cycles => 67,500 cycles total </br>
+(After resample for 128Hz, get 67,497 cycles total) </br>
+Almost 9 mins long </br>
 1,000 permutations
