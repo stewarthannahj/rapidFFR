@@ -65,22 +65,6 @@ Current problems: </br>
 2) Decide how long rapid FFR should be
 **Hannah looking at**
 
-To do: </br>
-Exp1 </br>
-How long rapid FFR should be? Psychometric fits? **Hannah doing** </br>
-Figure 1 - study design **to do** </br>
-Figure 2 - quality of data **to do** </br>
-Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **Stuart investigating standard issue** </br>
-Figure 4 - components for standard (red) and rapid (blue) **need to work out how long rapid needs to be to set chunk/iteration for this plot** </br>
-Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **need standard fixed to be able to do** </br>
-
-Exp2 </br>
-Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah extracting smaller chunks for start of scan to look for neuroadaptation as not showing at the moment, but chunks are currently 4500 long. So trying 500 sized chunks** </br>
-Change ANOVA -> regression **Hannah doing** </br>
-
-Re-writing </br>
-**DONE!**
-
 Notes: </br>
 No participant log </br>
 Everyone had normal hearing </br>
@@ -119,3 +103,20 @@ Same as exp 1 rapid but for 15 chunks of 4,500 cycles => 67,500 cycles total </b
 (After resample for 128Hz, get 67,497 cycles total) </br>
 Almost 9 mins long </br>
 1,000 permutations
+
+
+To do: </br>
+Exp1 </br>
+- How long rapid FFR should be? Psychometric fits? **Hannah doing** </br>
+- Figure 1 - study design **to do** </br>
+- Figure 2 - quality of data **to do** </br>
+- Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **Stuart investigating standard issue** </br>
+- Figure 4 - components for standard (red) and rapid (blue) **need to work out how long rapid needs to be to set chunk/iteration for this plot** </br>
+- Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **need standard fixed to be able to do** </br>
+
+Exp2 </br>
+- Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah extracting smaller chunks for start of scan to look for neuroadaptation as not showing at the moment, but chunks are currently 4500 long. So trying 500 sized chunks** </br>
+- Change ANOVA -> regression **Hannah doing** </br>
+
+Re-writing </br>
+**DONE!**
