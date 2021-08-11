@@ -56,22 +56,30 @@ analysis.Rmd </br>
 updates figures and runs stats
 
 Current problems: </br>
-Calculating mean SIGNAL and NZ is not working cleanly for standard FFR. They are not different from one another </br>
+1) Standard FFR: calculating mean SIGNAL and NZ is not working cleanly. They are not different from one another </br>
 	=> has been done on the following with no more luck: </br>
-100ms epoch *for chunked data* </br>
-54.xxx ms epoch *for increasing iterations of data* </br>
-7.8xxx ms epoch <- currently running </br>
-Decide how long rapid FFR should be
+- 100ms epoch *for chunked data* </br>
+- 54.xxx ms epoch *for increasing iterations of data* </br>
+- 7.8xxx ms epoch <- not any better </br>
+**Stuart currently looking at L05 to figure out**
+2) Decide how long rapid FFR should be
+**Hannah looking at**
 
 To do: </br>
-Need to decide on stats/research question </br>
-Figure 1 - study design </br>
-Figure 2 - quality of data </br>
-Figure 4 - need standard sorted </br>
-Figure 5 - correlations & stats. Want z-score between run 1 & run 2? </br>
-How long rapid FFR should be? Psychometric fits? </br>
+Exp1 </br>
+How long rapid FFR should be? Psychometric fits? **Hannah doing** </br>
+Figure 1 - study design **to do** </br>
+Figure 2 - quality of data **to do** </br>
+Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **Stuart investigating standard issue** </br>
+Figure 4 - components for standard (red) and rapid (blue) **need to work out how long rapid needs to be to set chunk/iteration for this plot** </br>
+Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **need standard fixed to be able to do** </br>
+
+Exp2 </br>
+Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah extracting smaller chunks for start of scan to look for neuroadaptation as not showing at the moment, but chunks are currently 4500 long. So trying 500 sized chunks** </br>
+Change ANOVA -> regression **Hannah doing** </br>
+
 Re-writing </br>
-DONE!
+**DONE!**
 
 Notes: </br>
 No participant log </br>
