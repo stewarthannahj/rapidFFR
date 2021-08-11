@@ -23,14 +23,15 @@ Calculates F0, resamples so F0 is 128 Hz. Removes trigger channel.
 2_preprocessing </br>
 spectralNZfloor_rapid_run <- bootstrapping needs a hell of a lot of time! </br>
 Options are hardcoded in to run spectralNZfloor_rapid_chunk_matInput.m </br>
-Phaselocked - for noise - splits data into either chunks (e.g. 0 - 1500, 1500 - 3000 etc.) or 'iterations' (e.g. 0 - 1500, 0 - 3000). In that chunk/iteration it puts in specified number of epochs into data at random points. Works out components (F0, H2 etc.). Spits out into csv. Bootstraps specified number of repeats (1000 atm). Next stage (3_analysis) then deals with all of the data per participant by averaging the values across the repeats. </br>
+Random - for noise - splits data into either chunks (e.g. 0 - 1500, 1500 - 3000 etc.) or 'iterations' (e.g. 0 - 1500, 0 - 3000). In that chunk/iteration it puts in specified number of epochs into data at random points. Works out components (F0, H2 etc.). Spits out into csv. Bootstraps specified number of repeats (1000 atm). Next stage (3_analysis) then deals with all of the data per participant by averaging the values across the repeats. </br>
+Phaselocked - for signal - same process of splitting into chunks or 'iterations', putting in epochs etc. BUT epochs are put at regular defined intervals rather than random points. Spits out into a seperate csv from the phaselocked one </br>
 *need participants in individual folders to run* </br>
 Exp1 standard: 7 hours per person for 1 chunk, 35 hours per person for 5 chunks and 40-50 hours per person for iterations </br>
 Exp1 rapid: 40-50 hours per person for iterations </br>
 Exp2 longRapid: 24-30 hours per person for 15 chunks
 
 3_analysis  </br>
-Make a csv of all of the output from each experiment from stage 2.  </br>
+Make a csv of all of the output from each experiment from stage 2. (phaselocked AND random for ALL participants)  </br>
 e.g. Exp1 rapid, all Ps, all nReps, add & sub, phase locked & random </br>
 Run SNR_XXX on that csv e.g. SNR_rapidIterations.R </br>
 This will output a single summary line for each participant into an experiment labelled output folder </br>
