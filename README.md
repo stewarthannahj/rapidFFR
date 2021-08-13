@@ -107,15 +107,17 @@ Almost 9 mins long </br>
 
 To do: </br>
 Exp1 </br>
-- How long rapid FFR should be? Once standard FFR sorted, decide what is a good SNR for it and then see what number of cycles needed to match it in rapid FFR </br>
-- Figure 1 - study design **to do** </br>
-- Figure 2 - quality of data **to do** </br>
-- Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **Stuart investigating standard issue** </br>
-- Figure 4 - components for standard (red) and rapid (blue) **need to work out how many cycles the rapid needs to be to do this plot** </br>
-- Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **need standard fixed to be able to do** </br>
+- first big thing is fix how standard FFR is signal and noise is calculated as it's not working at the moment **Stuart looking at**
+- Change how signal is calculated - at the moment the phaselocked is bootstrapped, but Stuart and Hannah discussed re if there's any point to doing this as there won't be much variation and each time you'd just be adding a bit of noise. So future plan is to calculate phaselocked signal from one repeat and then to bootstrap the random noise ONLY. **ready to do** </br>
+- How long rapid FFR should be? Once standard FFR sorted, decide what is a good SNR for it and then see what number of cycles needed to match it in rapid FFR **to do after standard issue fixed**</br>
+- Figure 1 - study design **ready to do** </br>
+- Figure 2 - quality of data **ready to do** </br>
+- Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **to do after standard issue fixed** </br>
+- Figure 4 - components for standard (red) and rapid (blue) **to do after standard issue fixed (need to work out how many cycles the rapid needs to be to do this plot)** </br>
+- Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **to do after standard issue fixed** </br>
 
 Exp2 </br>
-- Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah extracting smaller chunks for start of scan to look for neuroadaptation as not showing at the moment, but chunks are currently 4500 long. So trying 500 sized chunks** </br>
+- Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah currently plotting 500 sized chunks for first 9,000 cycles** </br>
 - Change ANOVA -> regression **sig regression for F0 only, need to work out where in the number of cycles it changes.** </br>
 
 Re-writing </br>
