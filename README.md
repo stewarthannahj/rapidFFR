@@ -107,16 +107,16 @@ Almost 9 mins long </br>
 
 To do: </br>
 Exp1 </br>
-- How long rapid FFR should be? Psychometric fits? **Hannah doing** </br>
+- How long rapid FFR should be? Once standard FFR sorted, decide what is a good SNR for it and then see what number of cycles needed to match it in rapid FFR </br>
 - Figure 1 - study design **to do** </br>
 - Figure 2 - quality of data **to do** </br>
 - Figure 3 - SNR or noise vs. signal plots for standard (red) and rapid (blue) **Stuart investigating standard issue** </br>
-- Figure 4 - components for standard (red) and rapid (blue) **need to work out how long rapid needs to be to set chunk/iteration for this plot** </br>
+- Figure 4 - components for standard (red) and rapid (blue) **need to work out how many cycles the rapid needs to be to do this plot** </br>
 - Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **need standard fixed to be able to do** </br>
 
 Exp2 </br>
 - Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah extracting smaller chunks for start of scan to look for neuroadaptation as not showing at the moment, but chunks are currently 4500 long. So trying 500 sized chunks** </br>
-- Change ANOVA -> regression **Hannah doing** </br>
+- Change ANOVA -> regression **sig regression for F0 only, need to work out where in the number of cycles it changes.** </br>
 
 Re-writing </br>
 **DONE!**
