@@ -1,0 +1,774 @@
+---
+title: 'rapidFFR'
+#author: 'HJS'
+#date: 'Last update: `r Sys.time()`'
+output: html_document
+---
+```{r, echo=F, warning=F, message=F}
+library(knitr)
+library(tidyverse)
+library(here)
+library(broom)
+library(ggplot2)
+library(gridExtra)
+library(car)
+library(rstatix)
+```
+
+Ignore - Hannah notes  
+Files:  
+Get SNR, SIG and NZ averaged over both runs from:  
+snr_rapidIterations_concat_add  
+snr_rapidIterations_concat_sub  
+snr_stddIterations_concat_add  
+snr_stddIterations_concat_sub
+
+SIG and NZ seperate from each run (calculate z-score?) from:  
+signal_mean_rapid_add  
+signal_mean_rapid_sub  
+nzfloor_mean_rapid_add  
+nzfloor_mean_rapid_sub  
+signal_mean_std_add  
+signal_mean_std_sub  
+nzfloor_mean_std_add  
+nzfloor_mean_std_sub  
+
+## Exp 1: standard vs. rapid  
+```{r, 'exp1_load_data', echo=F, message=F}
+setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/1_data/4_analysis/")
+
+#std_add <- read.csv("out/Experiment1_normalVrapid/snr_stdIterations_concat_add.csv", header=T)
+#std_sub <- read.csv("out/Experiment1_normalVrapid/snr_stdIterations_concat_sub.csv", header=T)
+
+rapid_add <- read.csv("out/Experiment1_normalVrapid/snr_rapidIterations_concat_add.csv", header=T)
+rapid_sub <- read.csv("out/Experiment1_normalVrapid/snr_rapidIterations_concat_sub.csv", header=T)
+
+#head(rapid_add)
+#head(rapid_sub)
+
+rapid_add_F1 <- subset(rapid_add,var_name=="Freq1")
+rapid_add_F2 <- subset(rapid_add,var_name=="Freq2")
+rapid_add_F3 <- subset(rapid_add,var_name=="Freq3")
+rapid_sub_F4 <- subset(rapid_sub,var_name=="Freq4")
+rapid_sub_F5 <- subset(rapid_sub,var_name=="Freq5")
+
+std_add_chunk <- read.csv("out/Experiment1_normalVrapid/snr_stdChunks_concat_add.csv", header=T)
+std_sub_chunk <- read.csv("out/Experiment1_normalVrapid/snr_stdChunks_concat_sub.csv", header=T)
+
+#head(std_add_chunk)
+#head(std_sub_chunk)
+
+std_add_chunk_F1 <- subset(std_add_chunk,var_name=="Freq1")
+std_add_chunk_F2 <- subset(std_add_chunk,var_name=="Freq2")
+std_add_chunk_F3 <- subset(std_add_chunk,var_name=="Freq3")
+std_sub_chunk_F4 <- subset(std_sub_chunk,var_name=="Freq4")
+std_sub_chunk_F5 <- subset(std_sub_chunk,var_name=="Freq5")
+
+#std_add <- read.csv("out/Experiment1_normalVrapid/snr_stdIterations_concat_add.csv", header=T)
+#std_sub <- read.csv("out/Experiment1_normalVrapid/snr_stdIterations_concat_sub.csv", header=T)
+
+#head(std_add)
+#head(std_sub)
+
+#std_add_F1 <- subset(std_add,var_name=="Freq1")
+#std_add_F2 <- subset(std_add,var_name=="Freq2")
+#std_add_F3 <- subset(std_add,var_name=="Freq3")
+#std_sub_F4 <- subset(std_sub,var_name=="Freq4")
+#std_sub_F5 <- subset(std_sub,var_name=="Freq5")
+```
+### Quality of data
+**Figure 1**:  
+Schematic of standard, rapid and longRapid FFR. Showing what chunks/iterations etc. and common timings are.
+
+**Figure 2**:  
+2x2 panel  
+top left: eeg std in red  
+top right: eeg rapid in blue  
+bottom left: Power std in red (showing harmonics)  
+bottom right: Power rapid in blue (showing harmonics)  
+*Caption*: Grand averaged time course and spectra representations of EEG recorded FFRs for standard (red) and rapid (blue) presentations. EEG data extracted from ... electrodes....
+
+
+### Q1: Is the signal sig. different from the noise?
+
+**Figure 3 option 1**:  
+```{r, Figure3: Option 1, echo=F, message=F, warning=F}
+ymin = -5
+ymax = 25
+
+#summary(std_add_chunk_F1)
+
+####################
+### standard chunks
+
+fig3Aa_std <- ggplot(std_add_chunk_F1, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="red") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab("SNR") + ylim(ymin, ymax)
+#fig3Aa_std
+
+fig3Ab_std <- ggplot(std_add_chunk_F2, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="red") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ac_std <- ggplot(std_add_chunk_F3, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="red") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ad_std <- ggplot(std_sub_chunk_F4, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="red") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ae_std <- ggplot(std_sub_chunk_F5, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="red") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab("SNR") + ylim(ymin, ymax)
+
+grid.arrange(fig3Aa_std, fig3Ab_std, fig3Ac_std, fig3Ad_std, fig3Ae_std, nrow=2)
+
+####################
+### rapid iterations
+
+fig3Aa <- ggplot(rapid_add_F1, aes(x=iteration, y=snr, group=iteration)) + 
+  geom_boxplot(color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab("SNR") + ylim(ymin, ymax)
+#fig3Aa
+
+fig3Ab <- ggplot(rapid_add_F2, aes(x=iteration, y=snr, group=iteration)) + 
+  geom_boxplot(color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ac <- ggplot(rapid_add_F3, aes(x=iteration, y=snr, group=iteration)) + 
+  geom_boxplot(color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ad <- ggplot(rapid_sub_F4, aes(x=iteration, y=snr, group=iteration)) + 
+  geom_boxplot(color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab("SNR") + ylim(ymin, ymax)
+
+fig3Ae <- ggplot(rapid_sub_F5, aes(x=iteration, y=snr, group=iteration)) + 
+  geom_boxplot(color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab("SNR") + ylim(ymin, ymax)
+
+grid.arrange(fig3Aa, fig3Ab, fig3Ac, fig3Ad, fig3Ae, nrow=2)
+```
+
+**Stats**:  
+$\color{red}{\text{Q}}$: One-sample t-test for SNR to 0? Nope!  
+$\color{red}{\text{Q}}$: ANOVA 1 (SNR) x 15 (iterations) - done. But this looks at the change across iterations rather than if signal is above noise.  
+$\color{red}{\text{Q}}$: ANOVA 1 (snr) x 2 (std, rapid). To compare std to rapid at common iterations (1500, 3000, 4500, 6000, 7500?  
+$\color{red}{\text{Q}}$: No stats here and do them on Figure 3: Option 2 data instead  
+
+```{r, Figure3: Option 1 stats, echo=F, message=F, warning=F, results='hide'}
+#summary(rapid_add_F1)
+
+# F0
+# check homogeneity
+leveneTest(snr ~ as.factor(iteration), data = rapid_add_F1)
+# compute the analysis of variance
+snr.iterations_F1 <- aov(snr ~ as.factor(iteration), data = rapid_add_F1)
+# summary of the analysis
+summary(snr.iterations_F1)
+# posthocs
+#TukeyHSD(snr.iterations)
+
+# H2
+# check homogeneity
+leveneTest(snr ~ as.factor(iteration), data = rapid_add_F2)
+# compute the analysis of variance
+snr.iterations.F2 <- aov(snr ~ as.factor(iteration), data = rapid_add_F2)
+# summary of the analysis
+summary(snr.iterations.F2)
+# posthocs
+#TukeyHSD(snr.iterations.F2)
+
+# H3
+# check homogeneity
+leveneTest(snr ~ as.factor(iteration), data = rapid_add_F3)
+# compute the analysis of variance
+snr.iterations.F3 <- aov(snr ~ as.factor(iteration), data = rapid_add_F3)
+# summary of the analysis
+summary(snr.iterations.F3)
+# posthocs
+#TukeyHSD(snr.iterations.F3)
+
+# H4
+# check homogeneity
+leveneTest(snr ~ as.factor(iteration), data = rapid_sub_F4)
+# compute the analysis of variance
+snr.iterations.F4 <- aov(snr ~ as.factor(iteration), data = rapid_sub_F4)
+# summary of the analysis
+summary(snr.iterations.F4)
+# posthocs
+#TukeyHSD(snr.iterations.F4)
+
+# H5
+# check homogeneity
+leveneTest(snr ~ as.factor(iteration), data = rapid_sub_F5)
+# compute the analysis of variance
+snr.iterations.F5 <- aov(snr ~ as.factor(iteration), data = rapid_sub_F5)
+# summary of the analysis
+summary(snr.iterations.F5)
+# posthocs
+#TukeyHSD(snr.iterations.F5)
+
+```
+
+ANOVA 1 (SNR) x 15 (iterations):  
+- F0+ sig. effect of iterations  
+- H2+ sig. effect of iterations  
+- H3+ NO sig. effect of iterations  
+- H4- NO sig. effect of iterations  
+- H5- sig. effect of iterations  
+
+**Figure 3 option 2**:  
+```{r, Figure3: Option 2, echo=F, message=F, warning=F}
+ymin = 0
+ymax = 0.4
+
+####################
+### standard chunks
+
+fig3Ba_std <- ggplot(std_add_chunk_F1, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="red", fill="red") +
+  geom_boxplot(aes(y = meanSIG), color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+#fig3Ba_std
+
+fig3Bb_std <- ggplot(std_add_chunk_F2, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="red", fill="red") +
+  geom_boxplot(aes(y = meanSIG), color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig3Bc_std <- ggplot(std_add_chunk_F3, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="red", fill="red") +
+  geom_boxplot(aes(y = meanSIG), color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig3Bd_std <- ggplot(std_sub_chunk_F4, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="red", fill="red") +
+  geom_boxplot(aes(y = meanSIG), color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig3Be_std <- ggplot(std_sub_chunk_F5, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="red", fill="red") +
+  geom_boxplot(aes(y = meanSIG), color="red") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+grid.arrange(fig3Ba_std, fig3Bb_std, fig3Bc_std, fig3Bd_std, fig3Be_std, nrow=2)
+
+####################
+### rapid iterations
+
+fig3Ba <- ggplot(rapid_add_F1, aes(x=iteration, group=iteration)) + 
+  geom_boxplot(aes(y = meanNZ), color="blue", fill="blue") +
+  geom_boxplot(aes(y = meanSIG), color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, ymax)
+#fig3Ba
+
+fig3Bb <- ggplot(rapid_add_F2, aes(x=iteration, group=iteration)) + 
+  geom_boxplot(aes(y = meanNZ), color="blue", fill="blue") +
+  geom_boxplot(aes(y = meanSIG), color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.3)
+
+fig3Bc <- ggplot(rapid_add_F3, aes(x=iteration, group=iteration)) + 
+  geom_boxplot(aes(y = meanNZ), color="blue", fill="blue") +
+  geom_boxplot(aes(y = meanSIG), color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.15)
+
+fig3Bd <- ggplot(rapid_sub_F4, aes(x=iteration, group=iteration)) + 
+  geom_boxplot(aes(y = meanNZ), color="blue", fill="blue") +
+  geom_boxplot(aes(y = meanSIG), color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig3Be <- ggplot(rapid_sub_F5, aes(x=iteration, group=iteration)) + 
+  geom_boxplot(aes(y = meanNZ), color="blue", fill="blue") +
+  geom_boxplot(aes(y = meanSIG), color="blue") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+grid.arrange(fig3Ba, fig3Bb, fig3Bc, fig3Bd, fig3Be, nrow=2)
+```
+
+**Stats**:  
+$\color{red}{\text{Q}}$: ANOVA 2 (signal, noise) x 15 (iterations). Does the difference between signal and noise changes across iterations.  
+$\color{red}{\text{Q}}$: ANOVA 2 (signal, noise) x 2 (std, rapid). To compare std to rapid at common iterations (1500, 3000, 4500, 6000, 7500?  
+
+```{r, Figure3: Option 2 stats, echo=F, message=F, warning=F, results='hide'}
+# need std to run
+```
+
+
+**Figure 4**:  
+two graphs: add on left and sub on right  
+- red = standard  
+- blue = rapid  
+- y axis: amplitude ($\mu$V peak)  
+- x axis: F0 H2 H3 H4 H5
+
+```{r, Figure4, echo=F, message=F, warning=F, results='hide'}
+ymin = 0
+ymax = 0.4
+
+summary(rapid_add)
+rapid_add$iteration <- as.factor(rapid_add$iteration)
+summary(rapid_add)
+
+rapid_add_select1500 <- subset(rapid_add, iteration=="1500")
+rapid_add_select3000 <- subset(rapid_add, iteration=="3000")
+rapid_add_select4500 <- subset(rapid_add, iteration=="4500")
+rapid_add_select6000 <- subset(rapid_add, iteration=="6000")
+rapid_add_select7500 <- subset(rapid_add, iteration=="7500")
+
+rapid_add_select <- rbind(rapid_add_select1500, rapid_add_select3000, rapid_add_select4500, rapid_add_select6000, rapid_add_select7500)
+
+summary(rapid_add_select)
+head(rapid_add_select)
+
+#add_select <- rbind(rapid_add_select, std_add) # need std_add to work!
+
+# add
+#fig4a <- ggplot(rapid_add, aes(x=var_name, y = meanSIG, group=condition)) + 
+#  geom_boxplot() +
+#  scale_color_manual(values=c("#blue", "#red")) +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+#  theme_classic() +
+#  ggtitle("Addition") + ylab(expression("mean signal amplitude"~"("*mu*V*")")) + ylim(ymin, ymax)
+#fig4a
+
+summary(rapid_sub)
+rapid_sub$iteration <- as.factor(rapid_sub$iteration)
+summary(rapid_sub)
+
+rapid_sub_select1500 <- subset(rapid_sub, iteration=="1500")
+rapid_sub_select3000 <- subset(rapid_sub, iteration=="3000")
+rapid_sub_select4500 <- subset(rapid_sub, iteration=="4500")
+rapid_sub_select6000 <- subset(rapid_sub, iteration=="6000")
+rapid_sub_select7500 <- subset(rapid_sub, iteration=="7500")
+
+rapid_sub_select <- rbind(rapid_sub_select1500, rapid_sub_select3000, rapid_sub_select4500, rapid_sub_select6000, rapid_sub_select7500)
+
+summary(rapid_sub_select)
+head(rapid_sub_select)
+
+#sub_select <- rbind(rapid_sub_select, std_sub) # need std_sub to work!
+
+# sub
+#fig4b <- ggplot(rapid_sub, aes(x=var_name, y = meanSIG, group=condition)) + 
+#  geom_boxplot() +
+#  scale_color_manual(values=c("#blue", "#red")) +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+#  theme_classic() +
+#  ggtitle("Subtraction") + ylab(expression("mean signal amplitude"~"("*mu*V*")")) + ylim(ymin, ymax)
+#fig4b
+
+#grid.arrange(fig4a, fig4b, nrow=1)
+```
+**Stats**:  
+$\color{red}{\text{Q}}$: ANOVA 2 (std, rapid) x 5 (harmonics). This looks at if peak mag. is different between standard and rapid FFR across harmonics  
+
+**Figure 5**:  
+correlations scatters for amplitude ($\mu$V peak) 
+seperate plots for F1, F2, F3 etc.  
+- grey scatter  
+- black correlation line  
+- y axis: rapid  
+- x axis: standard  
+$\color{red}{\text{Q}}$: which iteration should we use? 4500??
+$\color{red}{\text{Q}}$: want z-score of run 1 v run 2?
+
+
+### Q2: How long should the rapid FFR be?
+$\color{red}{\text{Q}}$: fit at 63%?
+
+## Exp 2: long rapid
+### Q3: How does the signal and noise change over a 9 min recording?
+```{r, 'exp2_load_data', echo=F, message=F}
+setwd("/Volumes/UCL_DR_HJS/projects/rapidFFR/1_data/4_analysis/")
+
+longRapid_add <- read.csv("out/Experiment2_longRapid/snr_longRapid_concat_add.csv", header=T)
+longRapid_sub <- read.csv("out/Experiment2_longRapid/snr_longRapid_concat_sub.csv", header=T)
+
+# head(longRapid_add)
+# head(longRapid_sub)
+
+longRapid_add_F1 <- subset(longRapid_add,var_name=="Freq1")
+longRapid_add_F2 <- subset(longRapid_add,var_name=="Freq2")
+longRapid_add_F3 <- subset(longRapid_add,var_name=="Freq3")
+longRapid_sub_F4 <- subset(longRapid_sub,var_name=="Freq4")
+longRapid_sub_F5 <- subset(longRapid_sub,var_name=="Freq5")
+
+```
+
+**Figure 6 option 1**:  
+```{r, Figure6: Option 1, echo=F, message=F, warning=F}
+ymin = -5
+ymax = 25
+
+summary(longRapid_add_F1)
+
+fig6Aa <- ggplot(longRapid_add_F1, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab("SNR") + ylim(ymin, ymax)
+#fig6Aa
+
+fig6Ab <- ggplot(longRapid_add_F2, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig6Ac <- ggplot(longRapid_add_F3, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig6Ad <- ggplot(longRapid_sub_F4, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab("SNR") + ylim(ymin, ymax)
+
+fig6Ae <- ggplot(longRapid_sub_F5, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab("SNR") + ylim(ymin, ymax)
+
+grid.arrange(fig6Aa, fig6Ab, fig6Ac, fig6Ad, fig6Ae, nrow=2)
+```
+
+**Stats**:  
+Option 1:  
+ANOVA 1 (snr) x 15 (chunks). Does snr change across chunks for each component?
+```{r, Figure6: Option 1 anova, echo=F, message=F, warning=F, results='hide'}
+#summary(longRapid_add_F1)
+
+# F0
+# check homogeneity
+leveneTest(snr ~ as.factor(chunk), data = longRapid_add_F1)
+# compute the analysis of variance
+snr.chunks_F1 <- aov(snr ~ as.factor(chunk), data = longRapid_add_F1)
+# summary of the analysis
+summary(snr.chunks_F1)
+# posthocs
+#TukeyHSD(snr.chunks_F1)
+
+# H2
+# check homogeneity
+leveneTest(snr ~ as.factor(chunk), data = longRapid_add_F2)
+# compute the analysis of variance
+snr.chunks_F2 <- aov(snr ~ as.factor(chunk), data = longRapid_add_F2)
+# summary of the analysis
+summary(snr.chunks_F2)
+# posthocs
+#TukeyHSD(snr.chunks_F2)
+
+# H3
+# check homogeneity
+leveneTest(snr ~ as.factor(chunk), data = longRapid_add_F3)
+# compute the analysis of variance
+snr.chunks_F3 <- aov(snr ~ as.factor(chunk), data = longRapid_add_F3)
+# summary of the analysis
+summary(snr.chunks_F3)
+# posthocs
+#TukeyHSD(snr.chunks_F3)
+
+# H4
+# check homogeneity
+leveneTest(snr ~ as.factor(chunk), data = longRapid_sub_F4)
+# compute the analysis of variance
+snr.chunks_F4 <- aov(snr ~ as.factor(chunk), data = longRapid_sub_F4)
+# summary of the analysis
+summary(snr.chunks_F4)
+# posthocs
+#TukeyHSD(snr.chunks_F4)
+
+# H5
+# check homogeneity
+leveneTest(snr ~ as.factor(chunk), data = longRapid_sub_F5)
+# compute the analysis of variance
+snr.chunks_F5 <- aov(snr ~ as.factor(chunk), data = longRapid_sub_F5)
+# summary of the analysis
+summary(snr.chunks_F5)
+# posthocs
+#TukeyHSD(snr.chunks_F5)
+
+```
+
+Regression: Does snr change across chunks for each component?
+```{r, Figure6: Option 1 regression, echo=F, message=F, warning=F, results='hide'}
+# F0
+lmSNR_F1 <- lm(snr ~ chunk, data = longRapid_add_F1)
+summary(lmSNR_F1)
+lmSNR_F1plot <- plot(lmSNR_F1$residuals, pch = 16, col = "purple")
+
+# F2
+lmSNR_F2 <- lm(snr ~ chunk, data = longRapid_add_F2)
+summary(lmSNR_F2)
+lmSNR_F2plot <- plot(lmSNR_F2$residuals, pch = 16, col = "purple")
+
+# F3
+lmSNR_F3 <- lm(snr ~ chunk, data = longRapid_add_F3)
+summary(lmSNR_F3)
+lmSNR_F3plot <- plot(lmSNR_F3$residuals, pch = 16, col = "purple")
+
+# F4
+lmSNR_F4 <- lm(snr ~ chunk, data = longRapid_sub_F4)
+summary(lmSNR_F4)
+lmSNR_F4plot <- plot(lmSNR_F4$residuals, pch = 16, col = "purple")
+
+# F5
+lmSNR_F5 <- lm(snr ~ chunk, data = longRapid_sub_F5)
+summary(lmSNR_F5)
+lmSNR_F5plot <- plot(lmSNR_F5$residuals, pch = 16, col = "purple")
+
+lmSNR_F1plot
+
+
+grid.arrange(plot(lmSNR_F1$residuals, pch = 16, col = "red"), plot(lmSNR_F2$residuals, pch = 16, col = "orange"), plot(lmSNR_F3$residuals, pch = 16, col = "green"), plot(lmSNR_F4$residuals, pch = 16, col = "blue"), plot(lmSNR_F5$residuals, pch = 16, col = "purple"), nrow=2)
+
+```
+
+- F0+ NO sig. effect of chunks  
+- H2+ NO sig. effect of chunks   
+- H3+ NO sig. effect of chunks    
+- H4- NO sig. effect of chunks    
+- H5- NO sig. effect of chunks   
+=> SNR does not significantly change over the 9 mins recording for any of the harmonics.
+
+**Figure 6 option 2**:  
+```{r, Figure6: Option 2, echo=F, message=F, warning=F}
+ymin = 0
+ymax = 0.4
+
+fig6Ba <- ggplot(longRapid_add_F1, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, ymax)
+#fig6Ba
+
+fig6Bb <- ggplot(longRapid_add_F2, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.3)
+
+fig6Bc <- ggplot(longRapid_add_F3, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.15)
+
+fig6Bd <- ggplot(longRapid_sub_F4, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig6Be <- ggplot(longRapid_sub_F5, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+grid.arrange(fig6Ba, fig6Bb, fig6Bc, fig6Bd, fig6Be, nrow=2)
+```
+
+**Stats**:  
+Option 2:  
+$\color{red}{\text{Q}}$: How do you do a 2 (signal, noise) x 15 (chunk) ANOVA in r!?  
+
+ANOVA 1 (signal) x 15 (chunks). Does the signal change across chunks?  
+
+```{r, Figure6: Option 2 statsA, echo=F, message=F, warning=F, results='hide'}
+#summary(longRapid_add_F1)
+
+# F0
+# check homogeneity
+leveneTest(meanSIG ~ as.factor(chunk), data = longRapid_add_F1)
+# compute the analysis of variance
+meanSIG.chunks_F1 <- aov(meanSIG ~ as.factor(chunk), data = longRapid_add_F1)
+# summary of the analysis
+summary(meanSIG.chunks_F1)
+
+# H2
+# check homogeneity
+leveneTest(meanSIG ~ as.factor(chunk), data = longRapid_add_F2)
+# compute the analysis of variance
+meanSIG.chunks_F2 <- aov(meanSIG ~ as.factor(chunk), data = longRapid_add_F2)
+# summary of the analysis
+summary(meanSIG.chunks_F2)
+
+# H3
+# check homogeneity
+leveneTest(meanSIG ~ as.factor(chunk), data = longRapid_add_F3)
+# compute the analysis of variance
+meanSIG.chunks_F3 <- aov(meanSIG ~ as.factor(chunk), data = longRapid_add_F3)
+# summary of the analysis
+summary(meanSIG.chunks_F3)
+
+# H4
+# check homogeneity
+leveneTest(meanSIG ~ as.factor(chunk), data = longRapid_sub_F4)
+# compute the analysis of variance
+meanSIG.chunks_F4 <- aov(meanSIG ~ as.factor(chunk), data = longRapid_sub_F4)
+# summary of the analysis
+summary(meanSIG.chunks_F4)
+
+# H5
+# check homogeneity
+leveneTest(meanSIG ~ as.factor(chunk), data = longRapid_sub_F5)
+# compute the analysis of variance
+meanSIG.chunks_F5 <- aov(meanSIG ~ as.factor(chunk), data = longRapid_sub_F5)
+# summary of the analysis
+summary(meanSIG.chunks_F5)
+```
+
+- F0+ NO sig. effect of chunks  
+- H2+ NO sig. effect of chunks   
+- H3+ NO sig. effect of chunks    
+- H4- NO sig. effect of chunks    
+- H5- NO sig. effect of chunks   
+=> mean signal does not significantly change over the 9 mins recording for any of the harmonics.
+
+
+ANOVA 1 (noise) x 15 (chunks). Does the noise change across chunks?  
+
+```{r, Figure6: Option 2 statsB, echo=F, message=F, warning=F, results='hide'}
+#summary(longRapid_add_F1)
+
+# F0
+# check homogeneity
+leveneTest(meanNZ ~ as.factor(chunk), data = longRapid_add_F1)
+# compute the analysis of variance
+meanNZ.chunks_F1 <- aov(meanNZ ~ as.factor(chunk), data = longRapid_add_F1)
+# summary of the analysis
+summary(meanNZ.chunks_F1)
+
+# H2
+# check homogeneity
+leveneTest(meanNZ ~ as.factor(chunk), data = longRapid_add_F2)
+# compute the analysis of variance
+meanNZ.chunks_F2 <- aov(meanNZ ~ as.factor(chunk), data = longRapid_add_F2)
+# summary of the analysis
+summary(meanNZ.chunks_F2)
+
+# H3
+# check homogeneity
+leveneTest(meanNZ ~ as.factor(chunk), data = longRapid_add_F3)
+# compute the analysis of variance
+meanNZ.chunks_F3 <- aov(meanNZ ~ as.factor(chunk), data = longRapid_add_F3)
+# summary of the analysis
+summary(meanNZ.chunks_F3)
+
+# H4
+# check homogeneity
+leveneTest(meanNZ ~ as.factor(chunk), data = longRapid_sub_F4)
+# compute the analysis of variance
+meanNZ.chunks_F4 <- aov(meanNZ ~ as.factor(chunk), data = longRapid_sub_F4)
+# summary of the analysis
+summary(meanNZ.chunks_F4)
+
+# H5
+# check homogeneity
+leveneTest(meanNZ ~ as.factor(chunk), data = longRapid_sub_F5)
+# compute the analysis of variance
+meanNZ.chunks_F5 <- aov(meanNZ ~ as.factor(chunk), data = longRapid_sub_F5)
+# summary of the analysis
+summary(meanNZ.chunks_F5)
+```
+
+- F0+ NO sig. effect of chunks  
+- H2+ NO sig. effect of chunks   
+- H3+ NO sig. effect of chunks    
+- H4- NO sig. effect of chunks    
+- H5- NO sig. effect of chunks   
+=> mean noise does not significantly change over the 9 mins recording for any of the harmonics.
+
+
+```{r, Figure6: Option 2 statsC, echo=F, message=F, warning=F, results='hide'}
+#summary(longRapid_add_F1)
+#MANOVA
+res.man <- manova(cbind(meanNZ, meanSIG) ~ chunk, data = longRapid_add_F1)
+summary(res.man)
+summary.aov(res.man)
+```
