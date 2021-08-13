@@ -8,6 +8,7 @@ FFR processing and graphing done in Matlab.
 
 MATLAB version: R2016a EEGLAB version: 2020.0
 
+Data at: https://osf.io/p23cg/
 
 FFR: Tim data pipeline
 
