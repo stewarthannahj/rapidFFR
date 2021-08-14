@@ -457,6 +457,18 @@ longRapid_add_F3 <- subset(longRapid_add,var_name=="Freq3")
 longRapid_sub_F4 <- subset(longRapid_sub,var_name=="Freq4")
 longRapid_sub_F5 <- subset(longRapid_sub,var_name=="Freq5")
 
+longRapid_500chunks_add <- read.csv("out/Experiment2_longRapid/snr_longRapid_500chunks_concat_add.csv", header=T)
+longRapid_500chunks_sub <- read.csv("out/Experiment2_longRapid/snr_longRapid_500chunks_concat_sub.csv", header=T)
+
+# head(longRapid_500chunks_add)
+# head(longRapid_500chunks_sub)
+
+longRapid_500chunks_add_F1 <- subset(longRapid_500chunks_add,var_name=="Freq1")
+longRapid_500chunks_add_F2 <- subset(longRapid_500chunks_add,var_name=="Freq2")
+longRapid_500chunks_add_F3 <- subset(longRapid_500chunks_add,var_name=="Freq3")
+longRapid_500chunks_sub_F4 <- subset(longRapid_500chunks_sub,var_name=="Freq4")
+longRapid_500chunks_sub_F5 <- subset(longRapid_500chunks_sub,var_name=="Freq5")
+
 ```
 
 **Figure 6 option 1**:  
@@ -565,6 +577,7 @@ summary(snr.chunks_F5)
 
 Regression: Does snr change across chunks for each component?
 ```{r, Figure6: Option 1 regression, echo=F, message=F, warning=F, results='hide'}
+# want the plots to show a random pattern! If a regular one is there then need to transform
 # F0
 lmSNR_F1 <- lm(snr ~ chunk, data = longRapid_add_F1)
 summary(lmSNR_F1)
@@ -597,12 +610,12 @@ grid.arrange(plot(lmSNR_F1$residuals, pch = 16, col = "red"), plot(lmSNR_F2$resi
 
 ```
 
-- F0+ NO sig. effect of chunks  
+- F0+ sig. effect of chunks  
 - H2+ NO sig. effect of chunks   
 - H3+ NO sig. effect of chunks    
 - H4- NO sig. effect of chunks    
 - H5- NO sig. effect of chunks   
-=> SNR does not significantly change over the 9 mins recording for any of the harmonics.
+=> SNR significantly changes over the 9 mins recording for F0 only.
 
 **Figure 6 option 2**:  
 ```{r, Figure6: Option 2, echo=F, message=F, warning=F}
@@ -771,4 +784,144 @@ summary(meanNZ.chunks_F5)
 res.man <- manova(cbind(meanNZ, meanSIG) ~ chunk, data = longRapid_add_F1)
 summary(res.man)
 summary.aov(res.man)
+```
+
+
+**Figure 7 option 1**:  
+```{r, Figure7: Option 1, echo=F, message=F, warning=F}
+ymin = -5
+ymax = 25
+
+summary(longRapid_500chunks_add_F1)
+
+fig7Aa <- ggplot(longRapid_500chunks_add_F1, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab("SNR") + ylim(ymin, ymax)
+#fig7Aa
+
+fig7Ab <- ggplot(longRapid_500chunks_add_F2, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig7Ac <- ggplot(longRapid_500chunks_add_F3, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab("SNR") + ylim(ymin, ymax)
+
+fig7Ad <- ggplot(longRapid_500chunks_sub_F4, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab("SNR") + ylim(ymin, ymax)
+
+fig7Ae <- ggplot(longRapid_500chunks_sub_F5, aes(x=chunk, y=snr, group=chunk)) + 
+  geom_boxplot(color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="blue") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab("SNR") + ylim(ymin, ymax)
+
+grid.arrange(fig7Aa, fig7Ab, fig7Ac, fig7Ad, fig7Ae, nrow=2)
+```
+
+Regression: Does snr change across 500 sized chunks at start of long rapid FFR for each component?
+```{r, Figure7 stats: Option 1 regression, echo=F, message=F, warning=F, results='hide'}
+# want the plots to show a random pattern! If a regular one is there then need to transform
+
+# F0
+lmSNR_500_F1 <- lm(snr ~ chunk, data = longRapid_500chunks_add_F1)
+summary(lmSNR_500_F1)
+lmSNR_500_F1plot <- plot(lmSNR_500_F1$residuals, pch = 16, col = "purple")
+
+# F2
+lmSNR_500_F2 <- lm(snr ~ chunk, data = longRapid_500chunks_add_F2)
+summary(lmSNR_500_F2)
+lmSNR_500_F2plot <- plot(lmSNR_500_F2$residuals, pch = 16, col = "purple")
+
+# F3
+lmSNR_500_F3 <- lm(snr ~ chunk, data = longRapid_500chunks_add_F3)
+summary(lmSNR_500_F3)
+lmSNR_500_F3plot <- plot(lmSNR_500_F3$residuals, pch = 16, col = "purple")
+
+# F4
+lmSNR_500_F4 <- lm(snr ~ chunk, data = longRapid_500chunks_sub_F4)
+summary(lmSNR_500_F4)
+lmSNR_500_F4plot <- plot(lmSNR_500_F4$residuals, pch = 16, col = "purple")
+
+# F5
+lmSNR_500_F5 <- lm(snr ~ chunk, data = longRapid_500chunks_sub_F5)
+summary(lmSNR_500_F5)
+lmSNR_500_F5plot <- plot(lmSNR_500_F5$residuals, pch = 16, col = "purple")
+
+lmSNR_500_F1plot
+
+
+grid.arrange(plot(lmSNR_500_F1$residuals, pch = 16, col = "red"), plot(lmSNR_500_F2$residuals, pch = 16, col = "orange"), plot(lmSNR_500_F3$residuals, pch = 16, col = "green"), plot(lmSNR_500_F4$residuals, pch = 16, col = "blue"), plot(lmSNR_500_F5$residuals, pch = 16, col = "purple"), nrow=2)
+
+```
+
+
+- F0+ sig. effect of chunks  
+- H2+ NO sig. effect of chunks   
+- H3+ NO sig. effect of chunks    
+- H4- NO sig. effect of chunks    
+- H5- NO sig. effect of chunks   
+=> SNR significantly changes over the 9 mins recording for F0 only.
+
+**Figure 7 option 2**:  
+```{r, Figure7: Option 2, echo=F, message=F, warning=F}
+ymin = 0
+ymax = 0.4
+
+fig7Ba <- ggplot(longRapid_500chunks_add_F1, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("F0+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, ymax)
+#fig7Ba
+
+fig7Bb <- ggplot(longRapid_500chunks_add_F2, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H2+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.3)
+
+fig7Bc <- ggplot(longRapid_500chunks_add_F3, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H3+") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.15)
+
+fig7Bd <- ggplot(longRapid_500chunks_sub_F4, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H4-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+fig7Be <- ggplot(longRapid_500chunks_sub_F5, aes(x=chunk, group=chunk)) + 
+  geom_boxplot(aes(y = meanNZ), color="purple", fill="purple") +
+  geom_boxplot(aes(y = meanSIG), color="purple") +
+  #geom_dotplot(binaxis='y', stackdir='center', dotsize=0.3, color="purple") +
+  #geom_jitter(color="black", size=0.4, alpha=0.9) +
+  theme_classic() +
+  ggtitle("H5-") + ylab(expression("amplitude"~"("*mu*V*")")) + ylim(ymin, 0.05)
+
+grid.arrange(fig7Ba, fig7Bb, fig7Bc, fig7Bd, fig7Be, nrow=2)
 ```
