@@ -118,8 +118,8 @@ Exp1 </br>
 - Figure 5 - correlations & stats. Want z-score between run 1 & run 2? **to do after standard issue fixed** </br>
 
 Exp2 </br>
-- Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **Hannah currently plotting 500 sized chunks for first 9,000 cycles** </br>
-- Change ANOVA -> regression **sig regression for F0 only, need to work out where in the number of cycles it changes.** </br>
+- Figure 6 - SNR or noise vs. signal plots for long rapid (purple) **made, but to decide** </br>
+- Change ANOVA -> regression **sig regression for F0 only, need to work out where in the number of cycles it changes. First 18 chunks of 500 cycles suggests it's in there somewhere...** </br>
 
 Re-writing </br>
 **DONE!**
